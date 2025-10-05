@@ -1,0 +1,20 @@
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+
+# Log files
+*.log
+
+# OS generated files
+Icon?
+ehthumbs.db
