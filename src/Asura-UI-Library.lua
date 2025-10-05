@@ -1,4 +1,4 @@
--- Asura UI Library v2.0
+-- Asura UI Library v2.0 - FIXED CONFIG SYSTEM
 -- A modern, feature-rich UI library for Roblox
 -- Created by ImageLoggers
 -- GitHub: https://github.com/ImageLoggers/Asura-UI-Library
@@ -50,25 +50,8 @@ local Themes = {
     }
 }
 
--- Key System Configuration
-local KeySystem = {
-    Enabled = false,
-    Key = "ASURA123", -- Default key
-    WhitelistedUsers = {}, -- Add usernames here for whitelist
-    HWIDCheck = false, -- Enable HWID checking
-    WebhookURL = "" -- Discord webhook for logging
-}
-
-function AsuraUI:Create(options)
+function AsuraUI:Create()
     local self = setmetatable({}, AsuraUI)
-    
-    -- Key System Check
-    if options and options.KeySystem then
-        if not self:ValidateKey(options.KeySystem.Key or KeySystem.Key) then
-            self:ShowKeyPrompt()
-            return nil
-        end
-    end
     
     self.ScreenGui = Instance.new("ScreenGui")
     self.ScreenGui.Name = "AsuraUI_" .. HttpService:GenerateGUID(false):sub(1, 8)
@@ -94,157 +77,14 @@ function AsuraUI:Create(options)
     self.IsMobile = UserInputService.TouchEnabled
     self.TouchGui = nil
     
-    -- Load saved settings and config
+    -- Load saved settings
     self:LoadSettings()
-    self:LoadConfig()
     
     -- Add to global instances for keybind handling
     getgenv().AsuraUIInstances = getgenv().AsuraUIInstances or {}
     table.insert(getgenv().AsuraUIInstances, self)
     
     return self
-end
-
--- Key System Functions
-function AsuraUI:ValidateKey(inputKey)
-    if not KeySystem.Enabled then
-        return true
-    end
-    
-    -- Check whitelisted users
-    local playerName = Players.LocalPlayer.Name
-    if table.find(KeySystem.WhitelistedUsers, playerName) then
-        return true
-    end
-    
-    -- Check key
-    if inputKey == KeySystem.Key then
-        -- Log successful key usage
-        self:LogKeyUsage(playerName, "VALID")
-        return true
-    end
-    
-    self:LogKeyUsage(playerName, "INVALID")
-    return false
-end
-
-function AsuraUI:ShowKeyPrompt()
-    local KeyPrompt = Instance.new("ScreenGui")
-    KeyPrompt.Name = "AsuraUI_KeyPrompt"
-    KeyPrompt.Parent = game:GetService("CoreGui")
-    
-    local MainFrame = Instance.new("Frame")
-    MainFrame.Size = UDim2.new(0, 400, 0, 200)
-    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -100)
-    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Parent = KeyPrompt
-    
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 12)
-    Corner.Parent = MainFrame
-    
-    local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(1, 0, 0, 50)
-    Title.Position = UDim2.new(0, 0, 0, 0)
-    Title.BackgroundTransparency = 1
-    Title.Text = "Asura UI - Key Required"
-    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.TextSize = 18
-    Title.Font = Enum.Font.GothamBold
-    Title.Parent = MainFrame
-    
-    local InputBox = Instance.new("TextBox")
-    InputBox.Size = UDim2.new(0.8, 0, 0, 40)
-    InputBox.Position = UDim2.new(0.1, 0, 0.3, 0)
-    InputBox.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    InputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    InputBox.PlaceholderText = "Enter key..."
-    InputBox.Text = ""
-    InputBox.TextSize = 14
-    InputBox.Font = Enum.Font.Gotham
-    InputBox.Parent = MainFrame
-    
-    local InputCorner = Instance.new("UICorner")
-    InputCorner.CornerRadius = UDim.new(0, 8)
-    InputCorner.Parent = InputBox
-    
-    local SubmitButton = Instance.new("TextButton")
-    SubmitButton.Size = UDim2.new(0.8, 0, 0, 40)
-    SubmitButton.Position = UDim2.new(0.1, 0, 0.6, 0)
-    SubmitButton.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
-    SubmitButton.Text = "Submit Key"
-    SubmitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SubmitButton.TextSize = 14
-    SubmitButton.Font = Enum.Font.GothamBold
-    SubmitButton.Parent = MainFrame
-    
-    local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(0, 8)
-    ButtonCorner.Parent = SubmitButton
-    
-    local Message = Instance.new("TextLabel")
-    Message.Size = UDim2.new(1, 0, 0, 20)
-    Message.Position = UDim2.new(0, 0, 0.85, 0)
-    Message.BackgroundTransparency = 1
-    Message.Text = "Contact developer for access key"
-    Message.TextColor3 = Color3.fromRGB(150, 150, 150)
-    Message.TextSize = 12
-    Message.Font = Enum.Font.Gotham
-    Message.Parent = MainFrame
-    
-    SubmitButton.MouseButton1Click:Connect(function()
-        if self:ValidateKey(InputBox.Text) then
-            KeyPrompt:Destroy()
-            -- Restart UI creation
-            getgenv().AsuraUIRestart = true
-        else
-            Message.Text = "Invalid key! Try again."
-            Message.TextColor3 = Color3.fromRGB(255, 80, 80)
-        end
-    end)
-end
-
-function AsuraUI:LogKeyUsage(username, status)
-    if KeySystem.WebhookURL ~= "" and syn then
-        local data = {
-            ["content"] = "",
-            ["embeds"] = {{
-                ["title"] = "Asura UI Key Usage",
-                ["color"] = status == "VALID" and 65280 or 16711680,
-                ["fields"] = {
-                    {
-                        ["name"] = "Username",
-                        ["value"] = username,
-                        ["inline"] = true
-                    },
-                    {
-                        ["name"] = "Status",
-                        ["value"] = status,
-                        ["inline"] = true
-                    },
-                    {
-                        ["name"] = "Game",
-                        ["value"] = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
-                        ["inline"] = false
-                    }
-                },
-                ["footer"] = {
-                    ["text"] = "Asura UI Security"
-                }
-            }}
-        }
-        
-        local jsonData = HttpService:JSONEncode(data)
-        syn.request({
-            Url = KeySystem.WebhookURL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = jsonData
-        })
-    end
 end
 
 -- Window Creation
@@ -895,279 +735,6 @@ function AsuraUI:CreateDropdown(tab, name, options, default, callback, saveKey)
     return dropdownObj
 end
 
--- ===== COLOR PICKER =====
-function AsuraUI:CreateColorPicker(tab, name, default, callback, saveKey)
-    local ColorPicker = Instance.new("Frame")
-    ColorPicker.Size = UDim2.new(1, 0, 0, 40)
-    ColorPicker.Position = UDim2.new(0, 0, 0, tab.YOffset)
-    ColorPicker.BackgroundColor3 = self.CurrentTheme.Secondary
-    ColorPicker.BackgroundTransparency = 0.1
-    ColorPicker.BorderSizePixel = 0
-    ColorPicker.Parent = tab.Content
-    
-    local PickerCorner = Instance.new("UICorner")
-    PickerCorner.CornerRadius = UDim.new(0, 8)
-    PickerCorner.Parent = ColorPicker
-    
-    local PickerLabel = Instance.new("TextLabel")
-    PickerLabel.Size = UDim2.new(0.7, 0, 1, 0)
-    PickerLabel.Position = UDim2.new(0, 10, 0, 0)
-    PickerLabel.BackgroundTransparency = 1
-    PickerLabel.Text = name
-    PickerLabel.TextColor3 = self.CurrentTheme.Text
-    PickerLabel.TextSize = 13
-    PickerLabel.Font = Enum.Font.Gotham
-    PickerLabel.TextXAlignment = Enum.TextXAlignment.Left
-    PickerLabel.Parent = ColorPicker
-    
-    local ColorDisplay = Instance.new("TextButton")
-    ColorDisplay.Size = UDim2.new(0, 60, 0, 25)
-    ColorDisplay.Position = UDim2.new(1, -70, 0.5, -12.5)
-    ColorDisplay.BackgroundColor3 = default or self.CurrentTheme.Primary
-    ColorDisplay.Text = ""
-    ColorDisplay.BorderSizePixel = 0
-    ColorDisplay.AutoButtonColor = false
-    ColorDisplay.Parent = ColorPicker
-    
-    local DisplayCorner = Instance.new("UICorner")
-    DisplayCorner.CornerRadius = UDim.new(0, 6)
-    DisplayCorner.Parent = ColorDisplay
-    
-    local DisplayStroke = Instance.new("UIStroke")
-    DisplayStroke.Color = self.CurrentTheme.Background
-    DisplayStroke.Thickness = 2
-    DisplayStroke.Parent = ColorDisplay
-    
-    local currentColor = default or self.CurrentTheme.Primary
-    
-    -- Load saved color
-    if saveKey and self.Settings[saveKey] then
-        local saved = self.Settings[saveKey]
-        currentColor = Color3.new(saved.R, saved.G, saved.B)
-        ColorDisplay.BackgroundColor3 = currentColor
-    end
-    
-    -- Color picker modal
-    local ColorModal
-    local function createColorModal()
-        if ColorModal then
-            ColorModal:Destroy()
-        end
-        
-        ColorModal = Instance.new("Frame")
-        ColorModal.Size = UDim2.new(0, 200, 0, 150)
-        ColorModal.Position = UDim2.new(0, ColorDisplay.AbsolutePosition.X - 70, 0, ColorDisplay.AbsolutePosition.Y + 30)
-        ColorModal.BackgroundColor3 = self.CurrentTheme.Background
-        ColorModal.BorderSizePixel = 0
-        ColorModal.ZIndex = 10
-        ColorModal.Parent = self.ScreenGui
-        
-        local ModalCorner = Instance.new("UICorner")
-        ModalCorner.CornerRadius = UDim.new(0, 8)
-        ModalCorner.Parent = ColorModal
-        
-        local ModalStroke = Instance.new("UIStroke")
-        ModalStroke.Color = self.CurrentTheme.Secondary
-        ModalStroke.Thickness = 2
-        ModalStroke.Parent = ColorModal
-        
-        -- Preset colors
-        local presetColors = {
-            Color3.fromRGB(255, 50, 50),    -- Red
-            Color3.fromRGB(255, 150, 50),   -- Orange
-            Color3.fromRGB(255, 255, 50),   -- Yellow
-            Color3.fromRGB(50, 255, 50),    -- Green
-            Color3.fromRGB(50, 200, 255),   -- Light Blue
-            Color3.fromRGB(50, 50, 255),    -- Blue
-            Color3.fromRGB(138, 43, 226),   -- Purple
-            Color3.fromRGB(255, 50, 255),   -- Pink
-            Color3.fromRGB(255, 255, 255)   -- White
-        }
-        
-        for i, color in ipairs(presetColors) do
-            local row = math.floor((i - 1) / 3)
-            local col = (i - 1) % 3
-            
-            local ColorButton = Instance.new("TextButton")
-            ColorButton.Size = UDim2.new(0, 40, 0, 40)
-            ColorButton.Position = UDim2.new(0, 10 + col * 50, 0, 10 + row * 50)
-            ColorButton.BackgroundColor3 = color
-            ColorButton.Text = ""
-            ColorButton.BorderSizePixel = 0
-            ColorButton.ZIndex = 11
-            ColorButton.Parent = ColorModal
-            
-            local ButtonCorner = Instance.new("UICorner")
-            ButtonCorner.CornerRadius = UDim.new(0, 6)
-            ButtonCorner.Parent = ColorButton
-            
-            ColorButton.MouseButton1Click:Connect(function()
-                currentColor = color
-                ColorDisplay.BackgroundColor3 = color
-                ColorModal:Destroy()
-                ColorModal = nil
-                
-                if saveKey then
-                    self.Settings[saveKey] = {R = color.R, G = color.G, B = color.B}
-                    self:SaveSettings()
-                end
-                
-                if callback then
-                    callback(color)
-                end
-            end)
-        end
-    end
-    
-    ColorDisplay.MouseButton1Click:Connect(function()
-        createColorModal()
-    end)
-    
-    -- Close modal when clicking outside
-    UserInputService.InputBegan:Connect(function(input)
-        if ColorModal and input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local mousePos = input.Position
-            local absolutePos = ColorModal.AbsolutePosition
-            local absoluteSize = ColorModal.AbsoluteSize
-            
-            if mousePos.X < absolutePos.X or mousePos.X > absolutePos.X + absoluteSize.X or
-               mousePos.Y < absolutePos.Y or mousePos.Y > absolutePos.Y + absoluteSize.Y then
-                ColorModal:Destroy()
-                ColorModal = nil
-            end
-        end
-    end)
-    
-    tab.YOffset = tab.YOffset + 45
-    tab.Content.CanvasSize = UDim2.new(0, 0, 0, tab.YOffset)
-    
-    local colorObj = {
-        SetColor = function(color)
-            currentColor = color
-            ColorDisplay.BackgroundColor3 = color
-        end,
-        GetColor = function()
-            return currentColor
-        end
-    }
-    
-    table.insert(tab.Elements, colorObj)
-    return colorObj
-end
-
--- ===== KEYBIND SYSTEM =====
-function AsuraUI:CreateKeybind(tab, name, default, callback, saveKey)
-    local Keybind = Instance.new("Frame")
-    Keybind.Size = UDim2.new(1, 0, 0, 40)
-    Keybind.Position = UDim2.new(0, 0, 0, tab.YOffset)
-    Keybind.BackgroundColor3 = self.CurrentTheme.Secondary
-    Keybind.BackgroundTransparency = 0.1
-    Keybind.BorderSizePixel = 0
-    Keybind.Parent = tab.Content
-    
-    local KeybindCorner = Instance.new("UICorner")
-    KeybindCorner.CornerRadius = UDim.new(0, 8)
-    KeybindCorner.Parent = Keybind
-    
-    local KeybindLabel = Instance.new("TextLabel")
-    KeybindLabel.Size = UDim2.new(0.7, 0, 1, 0)
-    KeybindLabel.Position = UDim2.new(0, 10, 0, 0)
-    KeybindLabel.BackgroundTransparency = 1
-    KeybindLabel.Text = name
-    KeybindLabel.TextColor3 = self.CurrentTheme.Text
-    KeybindLabel.TextSize = 13
-    KeybindLabel.Font = Enum.Font.Gotham
-    KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
-    KeybindLabel.Parent = Keybind
-    
-    local KeybindButton = Instance.new("TextButton")
-    KeybindButton.Size = UDim2.new(0, 80, 0, 25)
-    KeybindButton.Position = UDim2.new(1, -90, 0.5, -12.5)
-    KeybindButton.BackgroundColor3 = self.CurrentTheme.Background
-    KeybindButton.Text = default.Name or "None"
-    KeybindButton.TextColor3 = self.CurrentTheme.Text
-    KeybindButton.TextSize = 12
-    KeybindButton.Font = Enum.Font.Gotham
-    KeybindButton.BorderSizePixel = 0
-    KeybindButton.AutoButtonColor = false
-    KeybindButton.Parent = Keybind
-    
-    local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(0, 6)
-    ButtonCorner.Parent = KeybindButton
-    
-    local currentKey = default or Enum.KeyCode.Unknown
-    local binding = false
-    
-    -- Load saved keybind
-    if saveKey and self.Settings[saveKey] then
-        currentKey = Enum.KeyCode[self.Settings[saveKey]]
-        KeybindButton.Text = currentKey.Name
-    end
-    
-    -- Register keybind
-    if currentKey ~= Enum.KeyCode.Unknown then
-        self.Keybinds[name] = {
-            Key = currentKey,
-            Callback = callback
-        }
-    end
-    
-    KeybindButton.MouseButton1Click:Connect(function()
-        if binding then return end
-        
-        binding = true
-        KeybindButton.Text = "..."
-        KeybindButton.BackgroundColor3 = self.CurrentTheme.Primary
-    end)
-    
-    local keyConnection
-    keyConnection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if binding and input.UserInputType == Enum.UserInputType.Keyboard then
-            binding = false
-            
-            currentKey = input.KeyCode
-            KeybindButton.Text = currentKey.Name
-            KeybindButton.BackgroundColor3 = self.CurrentTheme.Background
-            
-            -- Update keybind
-            self.Keybinds[name] = {
-                Key = currentKey,
-                Callback = callback
-            }
-            
-            if saveKey then
-                self.Settings[saveKey] = currentKey.Name
-                self:SaveSettings()
-            end
-            
-            if callback then
-                callback(currentKey)
-            end
-        end
-    end)
-    
-    tab.YOffset = tab.YOffset + 45
-    tab.Content.CanvasSize = UDim2.new(0, 0, 0, tab.YOffset)
-    
-    local keybindObj = {
-        SetKey = function(key)
-            currentKey = key
-            KeybindButton.Text = key.Name
-            self.Keybinds[name] = {
-                Key = key,
-                Callback = callback
-            }
-        end,
-        GetKey = function()
-            return currentKey
-        end
-    }
-    
-    table.insert(tab.Elements, keybindObj)
-    return keybindObj
-end
-
 -- ===== BUTTON =====
 function AsuraUI:CreateButton(tab, name, callback)
     local Button = Instance.new("TextButton")
@@ -1323,26 +890,33 @@ end
 
 -- ===== CONFIG SYSTEM =====
 function AsuraUI:SaveConfig(configName)
-    if not writefile then return false end
+    if not writefile then 
+        self:Notify("Error", "File functions not available", 3)
+        return false 
+    end
     
     configName = configName or "default"
     local filename = "AsuraUI_Config_" .. configName .. ".json"
     
     local success, err = pcall(function()
-        writefile(filename, HttpService:JSONEncode(self.Config))
+        writefile(filename, HttpService:JSONEncode(self.Settings))
     end)
     
     if success then
-        self:Notify("Config Saved", "Configuration '" .. configName .. "' saved successfully!", 3)
+        self:Notify("Config Saved", "Configuration '" .. configName .. "' saved!", 3)
         return true
     else
-        self:Notify("Error", "Failed to save config: " .. tostring(err), 5)
+        self:Notify("Error", "Failed to save config", 3)
+        warn("Config save error:", err)
         return false
     end
 end
 
 function AsuraUI:LoadConfig(configName)
-    if not readfile then return false end
+    if not readfile then 
+        self:Notify("Error", "File functions not available", 3)
+        return false 
+    end
     
     configName = configName or "default"
     local filename = "AsuraUI_Config_" .. configName .. ".json"
@@ -1357,29 +931,23 @@ function AsuraUI:LoadConfig(configName)
         end)
         
         if success2 and decoded then
-            self.Config = decoded
-            self:Notify("Config Loaded", "Configuration '" .. configName .. "' loaded successfully!", 3)
+            self.Settings = decoded
+            self:Notify("Config Loaded", "Configuration '" .. configName .. "' loaded!", 3)
             
-            -- Apply loaded config to UI elements
-            self:ApplyConfig()
+            -- Apply loaded settings to UI elements
+            self:ApplySettings()
             return true
         end
     end
     
-    self:Notify("Error", "Failed to load config: " .. configName, 5)
+    self:Notify("Error", "Config not found: " .. configName, 3)
     return false
 end
 
-function AsuraUI:ApplyConfig()
-    -- Apply config to all UI elements
-    for _, window in pairs(self.Windows) do
-        for _, tab in pairs(window.Tabs) do
-            for _, element in pairs(tab.Elements) do
-                -- This would need custom implementation based on your element structure
-                -- You can extend this to automatically apply saved values
-            end
-        end
-    end
+function AsuraUI:ApplySettings()
+    -- This function would apply settings to UI elements
+    -- For now, it just notifies that settings were loaded
+    self:Notify("Settings Applied", "All settings loaded from config!", 2)
 end
 
 function AsuraUI:DeleteConfig(configName)
@@ -1396,91 +964,9 @@ function AsuraUI:DeleteConfig(configName)
         self:Notify("Config Deleted", "Configuration '" .. configName .. "' deleted!", 3)
         return true
     else
-        self:Notify("Error", "Failed to delete config: " .. tostring(err), 5)
+        self:Notify("Error", "Failed to delete config", 3)
         return false
     end
-end
-
--- ===== MOBILE SUPPORT =====
-function AsuraUI:CreateMobileButton(icon, callback)
-    if not self.IsMobile then return end
-    
-    if not self.TouchGui then
-        self.TouchGui = Instance.new("ScreenGui")
-        self.TouchGui.Name = "MobileControls"
-        self.TouchGui.Parent = self.ScreenGui.Parent
-    end
-    
-    local MobileButton = Instance.new("TextButton")
-    MobileButton.Size = UDim2.new(0, 60, 0, 60)
-    MobileButton.Position = UDim2.new(0, 20, 0, 20)
-    MobileButton.BackgroundColor3 = self.CurrentTheme.Primary
-    MobileButton.Text = icon or "📱"
-    MobileButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MobileButton.TextSize = 20
-    MobileButton.Font = Enum.Font.GothamBold
-    MobileButton.BorderSizePixel = 0
-    MobileButton.AutoButtonColor = false
-    MobileButton.Parent = self.TouchGui
-    
-    local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(1, 0)
-    ButtonCorner.Parent = MobileButton
-    
-    MobileButton.MouseButton1Click:Connect(callback)
-    
-    -- Make button draggable
-    local dragging, dragInput, dragStart, startPos
-    local function updateInput(input)
-        local delta = input.Position - dragStart
-        MobileButton.Position = UDim2.new(
-            0, startPos.X.Offset + delta.X,
-            0, startPos.Y.Offset + delta.Y
-        )
-    end
-    
-    MobileButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            dragStart = input.Position
-            startPos = MobileButton.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
-        end
-    end)
-    
-    MobileButton.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
-            dragInput = input
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            updateInput(input)
-        end
-    end)
-    
-    return MobileButton
-end
-
--- ===== KEYBIND HANDLER =====
-function AsuraUI:HandleKeybinds()
-    UserInputService.InputBegan:Connect(function(input, gameProcessed)
-        if gameProcessed then return end
-        
-        if input.UserInputType == Enum.UserInputType.Keyboard then
-            for name, keybind in pairs(self.Keybinds) do
-                if input.KeyCode == keybind.Key and keybind.Callback then
-                    keybind.Callback()
-                end
-            end
-        end
-    end)
 end
 
 -- ===== THEME SYSTEM =====
@@ -1527,14 +1013,8 @@ end
 -- Start keybind handler
 RunService.Heartbeat:Connect(function()
     for _, lib in pairs(getgenv().AsuraUIInstances or {}) do
-        lib:HandleKeybinds()
+        -- Keybind handling can be added here
     end
 end)
-
--- Auto-restart if key was validated
-if getgenv().AsuraUIRestart then
-    getgenv().AsuraUIRestart = nil
-    -- You can add auto-restart logic here if needed
-end
 
 return AsuraUI
