@@ -1,1 +1,10 @@
 
+## Pro Tips:
+
+- **Use descriptive folder names** (not too long)
+- **Keep it organized** - group related files together
+- **Add `.gitkeep` files** in empty folders to preserve them
+- **Use consistent naming** (camelCase or snake_case)
+- **Include a good README** - it's the first thing people see!
+
+That's it! Your UI library will be nicely organized on GitHub.
