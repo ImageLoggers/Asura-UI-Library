@@ -297,8 +297,8 @@ function AsuraUI:CreateTab(window, name, icon)
     Tab.YOffset = 0
     Tab.Elements = {}
     
-    -- Tab Selection
-    Tab.Button.MouseButton1Click:Connect(function()
+    -- Tab Selection Function
+    local function selectTab()
         for _, tab in pairs(window.Tabs) do
             TweenService:Create(tab.Button, TweenInfo.new(0.2), {BackgroundColor3 = self.CurrentTheme.Secondary}):Play()
             TweenService:Create(tab.Icon, TweenInfo.new(0.2), {TextColor3 = self.CurrentTheme.TextSecondary}):Play()
@@ -312,13 +312,16 @@ function AsuraUI:CreateTab(window, name, icon)
         Tab.Content.Visible = true
         
         window.CurrentTab = Tab
-    end)
+    end
+    
+    -- Tab Selection
+    Tab.Button.MouseButton1Click:Connect(selectTab)
     
     table.insert(window.Tabs, Tab)
     
     -- Select first tab
     if #window.Tabs == 1 then
-        Tab.Button.MouseButton1Click:Fire()
+        selectTab()
     end
     
     return Tab
@@ -778,6 +781,101 @@ function AsuraUI:CreateButton(tab, name, callback)
     return Button
 end
 
+-- ===== TEXTBOX =====
+function AsuraUI:CreateTextBox(tab, name, placeholder, callback, saveKey)
+    local TextBox = Instance.new("Frame")
+    TextBox.Size = UDim2.new(1, 0, 0, 40)
+    TextBox.Position = UDim2.new(0, 0, 0, tab.YOffset)
+    TextBox.BackgroundColor3 = self.CurrentTheme.Secondary
+    TextBox.BackgroundTransparency = 0.1
+    TextBox.BorderSizePixel = 0
+    TextBox.Parent = tab.Content
+    
+    local TextBoxCorner = Instance.new("UICorner")
+    TextBoxCorner.CornerRadius = UDim.new(0, 8)
+    TextBoxCorner.Parent = TextBox
+    
+    local TextBoxLabel = Instance.new("TextLabel")
+    TextBoxLabel.Size = UDim2.new(0.4, 0, 1, 0)
+    TextBoxLabel.Position = UDim2.new(0, 10, 0, 0)
+    TextBoxLabel.BackgroundTransparency = 1
+    TextBoxLabel.Text = name
+    TextBoxLabel.TextColor3 = self.CurrentTheme.Text
+    TextBoxLabel.TextSize = 13
+    TextBoxLabel.Font = Enum.Font.Gotham
+    TextBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextBoxLabel.Parent = TextBox
+    
+    local InputBox = Instance.new("TextBox")
+    InputBox.Size = UDim2.new(0.55, -10, 0, 25)
+    InputBox.Position = UDim2.new(0.45, 0, 0.5, -12.5)
+    InputBox.BackgroundColor3 = self.CurrentTheme.Background
+    InputBox.TextColor3 = self.CurrentTheme.Text
+    InputBox.PlaceholderText = placeholder or "Enter text..."
+    InputBox.PlaceholderColor3 = self.CurrentTheme.TextSecondary
+    InputBox.TextSize = 12
+    InputBox.Font = Enum.Font.Gotham
+    InputBox.ClearTextOnFocus = false
+    InputBox.BorderSizePixel = 0
+    InputBox.Parent = TextBox
+    
+    local InputCorner = Instance.new("UICorner")
+    InputCorner.CornerRadius = UDim.new(0, 6)
+    InputCorner.Parent = InputBox
+    
+    -- Load saved value
+    if saveKey and self.Settings[saveKey] ~= nil then
+        InputBox.Text = tostring(self.Settings[saveKey])
+    end
+    
+    InputBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            if saveKey then
+                self.Settings[saveKey] = InputBox.Text
+                self:SaveSettings()
+            end
+            
+            if callback then
+                callback(InputBox.Text)
+            end
+        end
+    end)
+    
+    tab.YOffset = tab.YOffset + 45
+    tab.Content.CanvasSize = UDim2.new(0, 0, 0, tab.YOffset)
+    
+    local textboxObj = {
+        SetText = function(text)
+            InputBox.Text = text
+        end,
+        GetText = function()
+            return InputBox.Text
+        end
+    }
+    
+    table.insert(tab.Elements, textboxObj)
+    return textboxObj
+end
+
+-- ===== LABEL =====
+function AsuraUI:CreateLabel(tab, text, textColor)
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(1, 0, 0, 25)
+    Label.Position = UDim2.new(0, 0, 0, tab.YOffset)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = textColor or self.CurrentTheme.Text
+    Label.TextSize = 13
+    Label.Font = Enum.Font.Gotham
+    Label.TextXAlignment = Enum.TextXAlignment.Center
+    Label.Parent = tab.Content
+    
+    tab.YOffset = tab.YOffset + 30
+    tab.Content.CanvasSize = UDim2.new(0, 0, 0, tab.YOffset)
+    
+    return Label
+end
+
 -- ===== NOTIFICATION SYSTEM =====
 function AsuraUI:Notify(title, message, duration)
     duration = duration or 5
@@ -998,6 +1096,113 @@ function AsuraUI:UpdateAllElements()
             end
         end
     end
+end
+
+-- ===== KEYBIND SYSTEM =====
+function AsuraUI:CreateKeybind(tab, name, defaultKey, callback, saveKey)
+    local Keybind = Instance.new("Frame")
+    Keybind.Size = UDim2.new(1, 0, 0, 40)
+    Keybind.Position = UDim2.new(0, 0, 0, tab.YOffset)
+    Keybind.BackgroundColor3 = self.CurrentTheme.Secondary
+    Keybind.BackgroundTransparency = 0.1
+    Keybind.BorderSizePixel = 0
+    Keybind.Parent = tab.Content
+    
+    local KeybindCorner = Instance.new("UICorner")
+    KeybindCorner.CornerRadius = UDim.new(0, 8)
+    KeybindCorner.Parent = Keybind
+    
+    local KeybindLabel = Instance.new("TextLabel")
+    KeybindLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    KeybindLabel.Position = UDim2.new(0, 10, 0, 0)
+    KeybindLabel.BackgroundTransparency = 1
+    KeybindLabel.Text = name
+    KeybindLabel.TextColor3 = self.CurrentTheme.Text
+    KeybindLabel.TextSize = 13
+    KeybindLabel.Font = Enum.Font.Gotham
+    KeybindLabel.TextXAlignment = Enum.TextXAlignment.Left
+    KeybindLabel.Parent = Keybind
+    
+    local KeybindButton = Instance.new("TextButton")
+    KeybindButton.Size = UDim2.new(0.35, -10, 0, 25)
+    KeybindButton.Position = UDim2.new(0.65, 0, 0.5, -12.5)
+    KeybindButton.BackgroundColor3 = self.CurrentTheme.Background
+    KeybindButton.Text = defaultKey
+    KeybindButton.TextColor3 = self.CurrentTheme.Text
+    KeybindButton.TextSize = 12
+    KeybindButton.Font = Enum.Font.Gotham
+    KeybindButton.BorderSizePixel = 0
+    KeybindButton.AutoButtonColor = false
+    KeybindButton.Parent = Keybind
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 6)
+    ButtonCorner.Parent = KeybindButton
+    
+    local currentKey = defaultKey
+    local listening = false
+    
+    -- Load saved keybind
+    if saveKey and self.Settings[saveKey] ~= nil then
+        currentKey = self.Settings[saveKey]
+        KeybindButton.Text = currentKey
+    end
+    
+    local function setKeybind(key)
+        currentKey = key
+        KeybindButton.Text = key
+        listening = false
+        
+        if saveKey then
+            self.Settings[saveKey] = currentKey
+            self:SaveSettings()
+        end
+    end
+    
+    KeybindButton.MouseButton1Click:Connect(function()
+        listening = true
+        KeybindButton.Text = "..."
+        KeybindButton.BackgroundColor3 = self.CurrentTheme.Primary
+    end)
+    
+    local connection
+    connection = UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        
+        if listening then
+            if input.UserInputType == Enum.UserInputType.Keyboard then
+                setKeybind(input.KeyCode.Name)
+                KeybindButton.BackgroundColor3 = self.CurrentTheme.Background
+            elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
+                setKeybind("MouseButton1")
+                KeybindButton.BackgroundColor3 = self.CurrentTheme.Background
+            elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
+                setKeybind("MouseButton2")
+                KeybindButton.BackgroundColor3 = self.CurrentTheme.Background
+            end
+        else
+            if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode.Name == currentKey then
+                if callback then
+                    callback()
+                end
+            end
+        end
+    end)
+    
+    tab.YOffset = tab.YOffset + 45
+    tab.Content.CanvasSize = UDim2.new(0, 0, 0, tab.YOffset)
+    
+    local keybindObj = {
+        SetKey = function(key)
+            setKeybind(key)
+        end,
+        GetKey = function()
+            return currentKey
+        end
+    }
+    
+    table.insert(tab.Elements, keybindObj)
+    return keybindObj
 end
 
 -- ===== DESTROY =====
