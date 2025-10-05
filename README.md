@@ -2,7 +2,7 @@
 ```markdown
 # Werm UI Library
 
-A feature-rich, themable UI library for Roblox scripts, modified from Rayfield Interface Suite.
+A feature-rich, themable UI library for Roblox scripts, modified from Werm Interface Suite.
 
 ## Features
 
