@@ -1,23 +1,22 @@
-# YourUILibrary
-A modern, feature-rich UI library for Roblox
 
-## Features
-- 🎨 Multiple themes (Dark, Light, Sakura)
-- 📱 Mobile support
-- 💾 Settings saving/loading
-- 🔑 Keybind system
-- 🔔 Notification system
-- 🎛️ Sliders, dropdowns, color pickers
-- 🎯 Toggles, buttons, and more!
+## 4. Update your `README.md` in the root:
 
-## Usage
+```markdown
+# Asura UI Library
 
-local YourUILibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/yourusername/YourUILibrary/main/src/YourUILibrary.lua"))()
+A modern, feature-rich UI library for Roblox with extensive customization options.
 
-local UI = YourUILibrary:Create()
-local Window = UI:CreateWindow("My UI", "Welcome!")
-local MainTab = UI:CreateTab(Window, "Main", "🏠")
+## ✨ Features
 
-UI:CreateToggle(MainTab, "Enable Feature", false, function(state)
-    print("Toggle:", state)
-end, "feature_toggle")
+- 🎨 **Multiple Themes** - Dark, Light, and Sakura themes
+- 📱 **Mobile Support** - Touch-optimized controls
+- 💾 **Settings Persistence** - Automatically saves preferences
+- 🔑 **Keybind System** - Customizable keyboard shortcuts
+- 🔔 **Notification System** - Beautiful toast notifications
+- 🎛️ **Rich Controls** - Toggles, sliders, dropdowns, color pickers
+- 🎯 **Easy to Use** - Simple and intuitive API
+
+## 🚀 Installation
+
+```lua
+local AsuraUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/ImageLoggers/Asura-UI-Library/main/src/Asura-UI-Library.lua"))()
