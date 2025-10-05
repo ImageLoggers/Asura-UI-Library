@@ -1118,7 +1118,7 @@ function WermUILibrary:CreateWindow(Settings)
 			Elements.UIPageLayout.Animated = true
 		end
 
-		if SelectedTheme ~= WermUILibrary.Theme.Default then
+		if SelectedTheme ~= WermUILibrary.Theme.Default and TabButton:FindFirstChild("Shadow") then
 			TabButton.Shadow.Visible = false
 		end
 		TabButton.UIStroke.Color = SelectedTheme.TabStroke
@@ -1133,18 +1133,21 @@ function WermUILibrary:CreateWindow(Settings)
 			TweenService:Create(TabButton.Image, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {ImageTransparency = 0.2}):Play()
 			TweenService:Create(TabButton.UIStroke, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {Transparency = 0}):Play()
 
-			TweenService:Create(TabButton.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0.7}):Play()
+			if TabButton:FindFirstChild("Shadow") then
+				TweenService:Create(TabButton.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0.7}):Play()
+			end
 		else
 			FirstTab = Name
 			TabButton.BackgroundColor3 = SelectedTheme.TabBackgroundSelected
 			TabButton.Image.ImageColor3 = SelectedTheme.SelectedTabTextColor
 			TabButton.Title.TextColor3 = SelectedTheme.SelectedTabTextColor
-			TweenService:Create(TabButton.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0.9}):Play()
+			if TabButton:FindFirstChild("Shadow") then
+				TweenService:Create(TabButton.Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quint), {ImageTransparency = 0.9}):Play()
+			end
 			TweenService:Create(TabButton.Image, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {ImageTransparency = 0}):Play()
 			TweenService:Create(TabButton, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
 			TweenService:Create(TabButton.Title, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {TextTransparency = 0}):Play()
 		end
-
 		TabButton.Interact.MouseButton1Click:Connect(function()
 			if Minimised then return end
 			TweenService:Create(TabButton, TweenInfo.new(0.7, Enum.EasingStyle.Quint), {BackgroundTransparency = 0}):Play()
